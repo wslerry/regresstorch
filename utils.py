@@ -1,49 +1,42 @@
+import os
 import pandas as pd
 import torch
-import shutil
+import torch.backends.cudnn as cudnn
+import torch.nn as nn
+import torch.nn.functional as F
 
 class Dataset:
-    def __init__(self, directory):
+    def __init__(self):
         super(Dataset, self).__init__()
-        self.directory = directory
+        # self.directory = None
 
-    def open(self):
-        x = pd.read_csv(self.directory)
-        return x
-
-
-def save_ckp(state, is_best, checkpoint_path, best_model_path):
-    """
-    state: checkpoint we want to save
-    is_best: is this the best checkpoint; min validation loss
-    checkpoint_path: path to save checkpoint
-    best_model_path: path to save best model
-    """
-    f_path = checkpoint_path
-    # save checkpoint data to the path given, checkpoint_path
-    torch.save(state, f_path)
-    # if it is a best model, min validation loss
-    if is_best:
-        best_fpath = best_model_path
-        # copy that checkpoint file to best path given, best_model_path
-        shutil.copyfile(f_path, best_fpath)
+    def open(self,directory):
+        dirs = self.directory
+        return pd.read_csv(dirs)
 
 
-def load_ckp(checkpoint_fpath, model, optimizer):
-    """
-    checkpoint_path: path to save checkpoint
-    model: model that we want to load checkpoint parameters into
-    optimizer: optimizer we defined in previous training
-    """
-    # load check point
-    checkpoint = torch.load(checkpoint_fpath)
-    # initialize state_dict from checkpoint to model
-    model.load_state_dict(checkpoint['state_dict'])
-    # initialize optimizer from checkpoint to optimizer
-    optimizer.load_state_dict(checkpoint['optimizer'])
-    # initialize valid_loss_min from checkpoint to valid_loss_min
-    valid_loss_min = checkpoint['valid_loss_min']
-    # return model, optimizer, epoch value, min validation loss
-    return model, optimizer, checkpoint['epoch'], valid_loss_min.item()
+def select_device(device='',batch_size=None):
+    cpu_request = device.lower() == 'cpu'
+    if device and not cpu_request:
+        os.environ['CUDA_VISIBLE_DEVICES'] = device
+        assert torch.cuda.is_available(), 'CUDA unavailable, invalid device %s requested' % device
 
+    cuda = False if cpu_request else torch.cuda.is_available()
 
+    if cuda:
+        c=1024 ** 2
+        ng = torch.cuda.device_count()
+        if ng > 1 and batch_size:
+            assert batch_size % ng == 0, 'batch-size %g not multiple of GPU count %g' % (batch_size, ng)
+        x = [torch.cuda.get_device_properties(i) for i in range(ng)]
+        s = 'Using CUDA'
+        for i in range(0, ng):
+            if i == 1:
+                s = ' ' * len(s)
+            print(f"{s}sdevice{i} _CudaDeviceProperties(name='{x[i].name}', total_memory={x[i].total_memory / c}MB)")
+    else:
+        print('Using CPU')
+
+    print('')  # skip a line
+    return torch.device('cuda:0' if cuda else 'cpu')
+    
