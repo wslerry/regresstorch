@@ -4,3 +4,7 @@
 # pycharm
 .idea/
 __pycache__
+
+# files
+*.pt
+*.pth

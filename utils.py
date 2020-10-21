@@ -6,13 +6,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class Dataset:
-    def __init__(self):
+    def __init__(self,directory):
         super(Dataset, self).__init__()
-        # self.directory = None
-
-    def open(self,directory):
-        dirs = self.directory
-        return pd.read_csv(dirs)
+        self.directory = directory
+        self.data = pd.read_csv(directory)
 
 
 def select_device(device='',batch_size=None):

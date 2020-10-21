@@ -66,7 +66,7 @@ def cpu_dataset(X, Y):
 def train():
     input_dir, var1, var2, adam, device = opt.input, opt.var1, opt.var2, opt.adam, opt.device
 
-    data = Dataset(input_dir).open()
+    data = Dataset(input_dir).data
 
     device = utils.select_device(device, batch_size=opt.batch_size)
 
@@ -119,7 +119,7 @@ def train():
             train_loss = train_loss / len(x)
             if train_loss <= train_loss_min:
                 print("Validation loss decreased ({:6f} ===> {:6f}). Saving the model...".format(train_loss_min,train_loss))
-                torch.save(net.state_dict(), "regression_networks.pt")
+                torch.save(net.state_dict(), "regression_model.pt")
                 train_loss_min = train_loss
 
             if epoch % 50 == 0:
