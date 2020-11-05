@@ -1,6 +1,10 @@
 # visual studio
 .vscode/
 
+# jupyter
+
+.ipynb_checkpoints
+
 # pycharm
 .idea/
 __pycache__
